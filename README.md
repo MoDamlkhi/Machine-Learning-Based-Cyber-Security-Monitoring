@@ -20,7 +20,7 @@ The model was trained on the **CICIDS2017** dataset, which is a benchmark for mo
 ## 📈 Performance Results
 | Metric | Score |
 | :--- | :--- |
-| **Accuracy** | 99.2% |
+| **Accuracy** | 99.7% |
 | **Precision** | 98.5% |
 | **Recall** | 98.7% |
 | **F1-Score** | 98.6% |
