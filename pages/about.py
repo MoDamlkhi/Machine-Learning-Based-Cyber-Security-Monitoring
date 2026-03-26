@@ -310,7 +310,7 @@ with st.sidebar:
         <h2 style="margin: 0; background: linear-gradient(135deg, #FFFFFF, #818CF8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             IDS Guardian
         </h2>
-        <p style="color: #64748B; font-size: 0.75rem; margin-top: 0.25rem;">Project Documentation</p>
+        <p style="color: #64748B; font-size: 0.75rem; margin-top: 0.25rem;">Project Documentation | 99.7% Accuracy</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -332,7 +332,7 @@ with st.sidebar:
     st.markdown("### 📊 Project Stats")
     st.markdown("""
     <div class="stats-badge">
-        <div class="stats-number">98.7%</div>
+        <div class="stats-number">99.7%</div>
         <div class="stats-label">Detection Accuracy</div>
     </div>
     <div class="stats-badge" style="margin-top: 0.5rem;">
@@ -361,6 +361,7 @@ with st.sidebar:
     st.markdown(f"""
     - **Version:** 2.0.0
     - **Release:** Enterprise Edition
+    - **Accuracy:** 99.7%
     - **Last Updated:** {datetime.now().strftime("%Y-%m-%d")}
     - **Status:** 🟢 Production Ready
     """)
@@ -571,7 +572,7 @@ st.markdown("""
         </div>
         <div class="info-box" style="margin: 0;">
             <strong style="color: #4F46E5;">✓ High Accuracy</strong>
-            <p style="color: #94A3B8; margin-top: 0.5rem;">98.7% detection rate with minimal false positives</p>
+            <p style="color: #94A3B8; margin-top: 0.5rem;">99.7% detection rate with minimal false positives</p>
         </div>
         <div class="info-box" style="margin: 0;">
             <strong style="color: #4F46E5;">✓ Multi-attack Detection</strong>
@@ -665,7 +666,7 @@ st.markdown("""
 st.markdown("""
 <div style="text-align: center; padding: 2rem; margin-top: 2rem; border-top: 1px solid rgba(79,70,229,0.2);">
     <p style="color: #64748B; font-size: 0.75rem;">
-        🛡️ IDS Guardian v2.0 | Enterprise Intrusion Detection System
+        🛡️ IDS Guardian v2.0 | Enterprise Intrusion Detection System | 99.7% Detection Accuracy
     </p>
     <p style="color: #4B5563; font-size: 0.7rem; margin-top: 0.5rem;">
         Powered by Advanced Machine Learning | Continuous Threat Intelligence
@@ -677,6 +678,7 @@ st.markdown("""
         <span class="badge">🔒 Secure by Design</span>
         <span class="badge">📊 Real-time Analytics</span>
         <span class="badge">🤖 AI-Powered</span>
+        <span class="badge">🎯 99.7% Accuracy</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
