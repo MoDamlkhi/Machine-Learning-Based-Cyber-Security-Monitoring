@@ -329,7 +329,7 @@ with st.sidebar:
         <h2 style="margin: 0; background: linear-gradient(135deg, #FFFFFF, #818CF8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             IDS Guardian
         </h2>
-        <p style="color: #64748B; font-size: 0.75rem; margin-top: 0.25rem;">Enterprise Security Platform</p>
+        <p style="color: #64748B; font-size: 0.75rem; margin-top: 0.25rem;">Enterprise Security Platform | 99.7% Accuracy</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -370,8 +370,6 @@ with st.sidebar:
     else:
         if st.button("📚 About", key="nav_about", use_container_width=True):
             navigate_to('about')
-    
-   
     
     # System Status
     st.markdown("### 📊 System Status")
@@ -442,7 +440,7 @@ if st.session_state.page == 'app':
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="color: #10B981;">✓</span>
-                <span style="color: #94A3B8;">High accuracy (98.7%)</span>
+                <span style="color: #94A3B8;">High accuracy (99.7%)</span>
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="color: #10B981;">✓</span>
@@ -461,7 +459,7 @@ if st.session_state.page == 'app':
     <div class="stats-section animate">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
             <div class="stat-card">
-                <div class="stat-number">98.7%</div>
+                <div class="stat-number">99.7%</div>
                 <div class="stat-label">Detection Accuracy</div>
             </div>
             <div class="stat-card">
@@ -663,7 +661,7 @@ elif st.session_state.page == 'about':
 st.markdown("""
 <div style="text-align: center; padding: 2rem; margin-top: 2rem; border-top: 1px solid rgba(79,70,229,0.2);">
     <p style="color: #64748B; font-size: 0.75rem;">
-        🛡️ IDS Guardian Enterprise Platform | Powered by Mohammed Damlkhi
+        🛡️ IDS Guardian Enterprise Platform | Powered by Mohammed Damlkhi | 99.7% Detection Accuracy
     </p>
     <p style="color: #4B5563; font-size: 0.7rem; margin-top: 0.5rem;">
         SOC-Ready | NIST Compliant | Enterprise Security Solution
