@@ -1,33 +1,29 @@
+"""Home page for the IDS Guardian Streamlit application.
+
+Renders the landing page (hero section, feature cards, and statistics) together
+with an in-page About view.  Navigation between the two views is managed via
+``st.session_state`` so the browser URL does not change.
+"""
+
 import streamlit as st
-import time
+
+from utils import inject_base_css, render_footer
 
 st.set_page_config(
     page_title="AI Intrusion Detection System | Enterprise Security",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
+# Apply shared base styles (fonts, background, sidebar, buttons, scrollbar …)
+inject_base_css()
+
 # =============================
-# ENHANCED PROFESSIONAL STYLES
+# PAGE-SPECIFIC STYLES
 # =============================
 st.markdown("""
 <style>
-    /* Modern Professional Theme */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    /* Main Background */
-    .stApp {
-        background: linear-gradient(135deg, #0A0F2E 0%, #070B1A 100%);
-    }
-    
     /* Hero Section */
     .hero-section {
         background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.05));
@@ -249,60 +245,6 @@ st.markdown("""
         color: #A5B4FC;
     }
     
-    /* Button Styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #4F46E5, #06B6D4);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        width: 100%;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
-    }
-    
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(10, 15, 46, 0.98), rgba(5, 7, 20, 0.98));
-        backdrop-filter: blur(10px);
-        border-right: 1px solid rgba(79, 70, 229, 0.2);
-    }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: #0A0F2E;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #4F46E5;
-        border-radius: 3px;
-    }
-    
-    /* Animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .animate {
-        animation: fadeInUp 0.6s ease-out;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -310,11 +252,17 @@ st.markdown("""
 # NAVIGATION STATE
 # =============================
 
-# Initialize session state for navigation
-if 'page' not in st.session_state:
-    st.session_state.page = 'app'
+if "page" not in st.session_state:
+    st.session_state.page = "app"
 
-def navigate_to(page):
+
+def navigate_to(page: str) -> None:
+    """Update the active page and trigger a re-render.
+
+    Args:
+        page: Target page identifier.  Accepted values are ``'app'``
+              (home) and ``'about'``.
+    """
     st.session_state.page = page
     st.rerun()
 
@@ -658,13 +606,4 @@ elif st.session_state.page == 'about':
     """, unsafe_allow_html=True)
 
 # Footer
-st.markdown("""
-<div style="text-align: center; padding: 2rem; margin-top: 2rem; border-top: 1px solid rgba(79,70,229,0.2);">
-    <p style="color: #64748B; font-size: 0.75rem;">
-        🛡️ IDS Guardian Enterprise Platform | Powered by Mohammed Damlkhi | 99.7% Detection Accuracy
-    </p>
-    <p style="color: #4B5563; font-size: 0.7rem; margin-top: 0.5rem;">
-        SOC-Ready | NIST Compliant | Enterprise Security Solution
-    </p>
-</div>
-""", unsafe_allow_html=True)
+render_footer()
