@@ -1,47 +1,52 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
+"""Detection / Dashboard page for the IDS Guardian Streamlit application.
+
+After a user logs in, this page:
+1. Accepts a CSV network-traffic dataset via the sidebar file uploader.
+2. Pre-processes the data (feature alignment, infinite-value handling).
+3. Runs the pre-trained Random Forest model to classify each network flow.
+4. Displays summary metrics, interactive charts, and a downloadable CSV report.
+
+Note:
+    The login credentials are intentionally hard-coded for demonstration
+    purposes only.  In a production deployment these should be loaded from
+    a secrets manager or environment variables.
+"""
+
+import time
+
 import joblib
+import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 from datetime import datetime
-import time
+
+from utils import (
+    ATTACK_RATE_CRITICAL,
+    ATTACK_RATE_HIGH,
+    ATTACK_RATE_MODERATE,
+    inject_base_css,
+)
 
 st.set_page_config(
     layout="wide",
     page_title="IDS Dashboard | Enterprise Security",
     page_icon="🛡️",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
+# Apply shared base styles, then layer dashboard-specific overrides.
+inject_base_css()
+
 # ==========================
-# OPTIMIZED PROFESSIONAL UI STYLES
+# DASHBOARD-SPECIFIC STYLES
 # ==========================
 
 st.markdown("""
 <style>
-    /* Modern Professional Theme - Fast Loading */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    /* Main Background - Simplified */
-    .stApp {
-        background: linear-gradient(135deg, #0A0F2E 0%, #070B1A 100%);
-    }
-    
-    /* Split Screen Layout */
-    .login-container {
-        display: flex;
-        min-height: 100vh;
-        width: 100%;
-    }
-    
+    /* ── Login – split-screen layout ─────────────────────────────────── */
+
     /* Left Panel - Branding */
     .brand-panel {
         flex: 1;
@@ -333,30 +338,24 @@ st.markdown("""
         color: white;
     }
     
-    /* Sidebar Styling */
+    /* Sidebar – slightly darker variant used on the dashboard */
     [data-testid="stSidebar"] {
         background: rgba(10, 15, 46, 0.95);
         backdrop-filter: blur(5px);
         border-right: 1px solid rgba(79, 70, 229, 0.2);
     }
-    
-    /* Button Styling */
+
+    /* Button – tighter padding variant for the dashboard layout */
     .stButton > button {
-        background: linear-gradient(135deg, #4F46E5, #06B6D4);
-        color: white;
-        border: none;
-        border-radius: 12px;
         padding: 0.7rem 1.2rem;
-        font-weight: 600;
         transition: all 0.2s ease;
-        width: 100%;
     }
-    
+
     .stButton > button:hover {
         transform: translateY(-1px);
         box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
     }
-    
+
     /* File Uploader */
     .stFileUploader {
         border: 2px dashed #4F46E5;
@@ -364,34 +363,19 @@ st.markdown("""
         padding: 1.5rem;
         background: rgba(79, 70, 229, 0.05);
     }
-    
+
     /* Dataframe */
     .dataframe {
         border-radius: 12px;
         overflow: hidden;
     }
-    
+
     .dataframe thead th {
         background: linear-gradient(135deg, #4F46E5, #06B6D4);
         color: white;
         padding: 12px;
     }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: #0A0F2E;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #4F46E5;
-        border-radius: 3px;
-    }
-    
+
     /* Success/Warning/Error Boxes */
     .stAlert {
         border-radius: 12px;
@@ -408,9 +392,8 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    # Create split screen layout
     left_col, right_col = st.columns([1, 1], gap="large")
-    
+
     with left_col:
         st.markdown("""
         <div class="brand-panel">
@@ -510,6 +493,16 @@ st.markdown("""
 
 @st.cache_resource
 def load_models():
+    """Load the pre-trained IDS model and its expected feature list.
+
+    The results are cached so the files are read from disk only once per
+    Streamlit server session, avoiding repeated I/O on every page render.
+
+    Returns:
+        tuple[sklearn estimator, list[str]]: A ``(model, features)`` pair
+        where *model* is the trained classifier and *features* is the ordered
+        list of column names the model was trained on.
+    """
     model = joblib.load("ids_model.pkl")
     features = joblib.load("feature_names.pkl")
     return model, features
@@ -556,29 +549,32 @@ with st.sidebar:
         st.rerun()
 
 # ==========================
-# METRICS DISPLAY (UPDATED WITH 99.7%)
+# DASHBOARD METRICS & CHARTS
 # ==========================
 
 if uploaded_file:
     # Load and process data
     df = pd.read_csv(uploaded_file)
     df.columns = df.columns.str.strip()
-    
+
     st.toast("Dataset loaded successfully 🚀")
     st.success("✅ Dataset Loaded Successfully")
     st.info(f"Rows: {df.shape[0]} | Columns: {df.shape[1]}")
-    
-    # Preprocessing
-    df = df.reindex(columns=features, fill_value=0)
-    df.replace([np.inf, -np.inf], np.nan, inplace=True)
-    df.fillna(0, inplace=True)
-    
+
+    # Align columns to the training feature set, then sanitise numeric values.
+    # Using method chaining avoids deprecated in-place mutation.
+    df = (
+        df.reindex(columns=features, fill_value=0)
+        .replace([np.inf, -np.inf], np.nan)
+        .fillna(0)
+    )
+
     # Prediction
     with st.spinner("🔄 Analyzing network traffic..."):
         prediction = model.predict(df)
-    
+
     df["Prediction"] = prediction
-    
+
     # Statistics
     attack_count = (df["Prediction"] == 1).sum()
     benign_count = (df["Prediction"] == 0).sum()
@@ -624,7 +620,14 @@ if uploaded_file:
         """, unsafe_allow_html=True)
     
     with col4:
-        risk_class = "threat-critical" if attack_rate > 50 else "threat-high" if attack_rate > 30 else "threat-medium" if attack_rate > 10 else "threat-low"
+        if attack_rate >= ATTACK_RATE_CRITICAL:
+            risk_class = "threat-critical"
+        elif attack_rate >= ATTACK_RATE_HIGH:
+            risk_class = "threat-high"
+        elif attack_rate >= ATTACK_RATE_MODERATE:
+            risk_class = "threat-medium"
+        else:
+            risk_class = "threat-low"
         st.markdown(f"""
         <div class="metric-card" style="text-align: center;">
             <div class="metric-icon">🎯</div>
@@ -635,24 +638,25 @@ if uploaded_file:
         """, unsafe_allow_html=True)
     
     # ==========================
-    # SMART INSIGHTS
+    # AI INSIGHTS
     # ==========================
-    
+
     st.subheader("🧠 AI Insights")
-    
-    if attack_rate > 50:
+
+    # Use named constants so thresholds are easy to tune in one place.
+    if attack_rate >= ATTACK_RATE_CRITICAL:
         st.error("⚠️ Critical Threat Level: Immediate action required!")
-    elif attack_rate > 30:
+    elif attack_rate >= ATTACK_RATE_HIGH:
         st.warning("⚠️ High suspicious activity detected.")
-    elif attack_rate > 10:
+    elif attack_rate >= ATTACK_RATE_MODERATE:
         st.info("ℹ️ Moderate anomalies detected.")
     else:
         st.success("✅ Network traffic is mostly safe.")
-    
-    # Risk indicator
-    if attack_rate > 30:
+
+    # Risk indicator banner
+    if attack_rate >= ATTACK_RATE_HIGH:
         st.error("🔴 HIGH RISK DETECTED")
-    elif attack_rate > 10:
+    elif attack_rate >= ATTACK_RATE_MODERATE:
         st.warning("🟠 MEDIUM RISK")
     else:
         st.success("🟢 NETWORK SAFE")
@@ -726,28 +730,43 @@ if uploaded_file:
     st.plotly_chart(gauge, use_container_width=True, config={'displayModeBar': False})
     
     # ==========================
-    # TREND CHART
+    # ROLLING ATTACK RATE CHART
     # ==========================
-    
-    trend = df["Prediction"].value_counts().reset_index()
-    trend.columns = ["Type", "Count"]
-    trend["Type"] = trend["Type"].map({0: "Benign", 1: "Attack"})
-    
+
+    # Show how the attack rate evolves across the dataset using a
+    # 100-record rolling window.  This is more informative than a static
+    # two-point line chart produced by value_counts().
+    _WINDOW = 100
+    rolling_df = (
+        pd.DataFrame({"prediction": prediction})
+        .assign(
+            rolling_attack_rate=lambda d: (
+                d["prediction"]
+                .rolling(window=_WINDOW, min_periods=1)
+                .mean()
+                * 100
+            ),
+            record_index=lambda d: d.index,
+        )
+    )
+    # Downsample to keep the chart responsive for large datasets.
+    sample_df = rolling_df.iloc[:: max(1, len(rolling_df) // 1000)]
+
     fig = px.line(
-        trend,
-        x="Type",
-        y="Count",
-        title="Attack Trend Overview",
-        markers=True
+        sample_df,
+        x="record_index",
+        y="rolling_attack_rate",
+        title=f"Rolling Attack Rate (window = {_WINDOW} records)",
+        labels={"record_index": "Record Index", "rolling_attack_rate": "Attack Rate (%)"},
     )
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#F1F5F9", size=11),
-        margin=dict(l=20, r=20, t=40, b=20)
+        margin=dict(l=20, r=20, t=40, b=20),
     )
-    fig.update_traces(line_color="#4F46E5", marker_color="#06B6D4")
-    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    fig.update_traces(line_color="#4F46E5")
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     
     # ==========================
     # TABLE
